@@ -1,0 +1,16 @@
+{
+  "name": "Billing App",
+  "short_name": "Billing",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#2563eb",
+  "description": "A simple app for creating and managing bills.",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
