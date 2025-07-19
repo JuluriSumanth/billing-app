@@ -49,7 +49,47 @@
     .bill-details td { background-color: #f9fafb; padding: 1rem; }
     .bill-details table th { background: #e5e7eb; }
     .bill-details .total-row td { font-weight: bold; text-align: right; border-top: 2px solid #d1d5db;}
+/* In index.html, inside <style> */
 
+/* --- NEW CSS for Dashboard --- */
+.filters {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.filters input[type="date"] {
+  padding: 0.5rem;
+}
+.kpi-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.kpi-card {
+  flex: 1;
+  min-width: 150px;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+}
+.kpi-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #6b7280;
+}
+.kpi-card p {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+/* --- End New CSS --- */
     @media (min-width: 640px) { header h1 { font-size: 1.5rem; } }
   </style>
 </head>
@@ -64,11 +104,53 @@
 
   <main id="main-content">
     <nav>
+              <button data-section="dashboard" class="active">Dashboard</button> <!-- ADD THIS -->
       <button data-section="inventory" class="active">Inventory</button>
       <button data-section="create-bill">Create Bill</button>
       <button data-section="bills">Bills</button>
     </nav>
-
+<section id="dashboard" class="app-section active">
+  <h2>Sales Dashboard</h2>
+  
+  <!-- Filters -->
+  <div class="filters">
+    <label for="start-date">From:</label>
+    <input type="date" id="start-date">
+    <label for="end-date">To:</label>
+    <input type="date" id="end-date">
+  </div>
+  
+  <!-- Key Metrics (KPIs) -->
+  <div class="kpi-container">
+    <div class="kpi-card">
+      <h4>Total Sales</h4>
+      <p id="total-sales">₹0.00</p>
+    </div>
+    <div class="kpi-card">
+      <h4>Total Bills</h4>
+      <p id="total-bills">0</p>
+    </div>
+    <div class="kpi-card">
+      <h4>Average Bill Value</h4>
+      <p id="avg-bill-value">₹0.00</p>
+    </div>
+  </div>
+  
+  <!-- Top Selling Products -->
+  <h3>Top Selling Products (by Revenue)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Quantity Sold</th>
+        <th>Total Revenue</th>
+      </tr>
+    </thead>
+    <tbody id="top-products-body">
+      <!-- Data will be inserted here by JS -->
+    </tbody>
+  </table>
+</section>
     <!-- Inventory -->
     <section id="inventory" class="app-section active">
       <h2>Inventory</h2>
@@ -172,6 +254,9 @@ auth.onAuthStateChanged(user => {
         // Start listening for real-time data
         listenToInventory();
         listenToBills();
+        // Set Dashboard as default view
+document.querySelector('button[data-section="dashboard"]').click(); // ADD THIS LINE
+
     } else {
         currentUser = null;
         if (inventoryUnsubscribe) inventoryUnsubscribe();
@@ -205,6 +290,10 @@ document.querySelectorAll('nav button').forEach(btn => btn.addEventListener('cli
     document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.section).classList.add('active');
+    // Add this IF statement right after it:
+if (btn.dataset.section === 'dashboard') {
+    initializeDashboard();
+}
 }));
 
 /* ---------- INVENTORY (CLOUD-ENABLED) ---------- */
@@ -371,6 +460,83 @@ function listenToBills(query = '') {
         }
         renderBillsList(billsToRender);
     });
+}
+/* ---------- DASHBOARD (NEW) ---------- */
+const startDateInput = document.getElementById('start-date');
+const endDateInput = document.getElementById('end-date');
+
+function initializeDashboard() {
+    // Set default date range (e.g., last 30 days)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+
+    // Format for input[type=date] which requires YYYY-MM-DD
+    endDateInput.value = endDate.toISOString().split('T')[0];
+    startDateInput.value = startDate.toISOString().split('T')[0];
+
+    // Add event listeners to date inputs
+    startDateInput.addEventListener('change', updateDashboard);
+    endDateInput.addEventListener('change', updateDashboard);
+    
+    // Initial calculation
+    updateDashboard();
+}
+
+function updateDashboard() {
+    if (!localBillsCache.length) return; // Don't run if there's no data
+
+    const startDate = new Date(startDateInput.value);
+    // Set to the end of the selected day to include all bills from that day
+    const endDate = new Date(endDateInput.value);
+    endDate.setHours(23, 59, 59, 999);
+
+    // 1. Filter bills by date range
+    const filteredBills = localBillsCache.filter(bill => {
+        const billDate = bill.date.toDate();
+        return billDate >= startDate && billDate <= endDate;
+    });
+
+    // 2. Calculate KPIs
+    const totalSales = filteredBills.reduce((sum, bill) => sum + bill.total, 0);
+    const totalBills = filteredBills.length;
+    const avgBillValue = totalBills > 0 ? totalSales / totalBills : 0;
+
+    document.getElementById('total-sales').textContent = `₹${totalSales.toFixed(2)}`;
+    document.getElementById('total-bills').textContent = totalBills;
+    document.getElementById('avg-bill-value').textContent = `₹${avgBillValue.toFixed(2)}`;
+
+    // 3. Calculate Top Selling Products
+    const productStats = new Map();
+    filteredBills.forEach(bill => {
+        bill.lines.forEach(line => {
+            const existing = productStats.get(line.name) || { qty: 0, revenue: 0 };
+            productStats.set(line.name, {
+                qty: existing.qty + line.qty,
+                revenue: existing.revenue + (line.price * line.qty)
+            });
+        });
+    });
+
+    // Convert Map to Array, sort by revenue, and take top 10
+    const topProducts = Array.from(productStats.entries())
+        .map(([name, stats]) => ({ name, ...stats }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10);
+
+    // 4. Render Top Products Table
+    const topProductsBody = document.getElementById('top-products-body');
+    if (topProducts.length > 0) {
+        topProductsBody.innerHTML = topProducts.map(p => `
+            <tr>
+                <td>${p.name}</td>
+                <td>${p.qty}</td>
+                <td>₹${p.revenue.toFixed(2)}</td>
+            </tr>
+        `).join('');
+    } else {
+        topProductsBody.innerHTML = '<tr><td colspan="3">No sales data for this period.</td></tr>';
+    }
 }
 
 function renderBillsList(bills) {
