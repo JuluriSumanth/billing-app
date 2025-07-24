@@ -17,7 +17,7 @@
     #auth-button { background: white; color: var(--accent); border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; transition: background 0.2s; }
     #auth-button:hover { background: #e0e7ff; }
 
-    nav { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
     nav button { background: white; color: var(--accent); border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; transition: background 0.2s; }
     nav button.active, nav button:hover { background: #e0e7ff; }
 
@@ -49,60 +49,29 @@
     .bill-details td { background-color: #f9fafb; padding: 1rem; }
     .bill-details table th { background: #e5e7eb; }
     .bill-details .total-row td { font-weight: bold; text-align: right; border-top: 2px solid #d1d5db;}
-/* In index.html, inside <style> */
+    
+    .filters { background: white; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;}
+    .filters input[type="date"] { padding: 0.5rem; }
+    .kpi-container { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .kpi-card { flex: 1; min-width: 150px; background: white; padding: 1rem; border-radius: 0.375rem; text-align: center; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); }
+    .kpi-card h4 { margin: 0 0 0.5rem 0; color: #6b7280; }
+    .kpi-card p { margin: 0; font-size: 1.75rem; font-weight: 600; color: var(--accent); }
 
-/* --- NEW CSS for Dashboard --- */
-.filters {
-  background: white;
-  padding: 1rem;
-  border-radius: 0.375rem;
-  margin-bottom: 1rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-.filters input[type="date"] {
-  padding: 0.5rem;
-}
-.kpi-container {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-.kpi-card {
-  flex: 1;
-  min-width: 150px;
-  background: white;
-  padding: 1rem;
-  border-radius: 0.375rem;
-  text-align: center;
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-}
-.kpi-card h4 {
-  margin: 0 0 0.5rem 0;
-  color: #6b7280;
-}
-.kpi-card p {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: var(--accent);
-}
-.customer-status {
-  padding: 0.75rem;
-  margin-top: 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-}
-.status-existing {
-  background-color: #e0e7ff; /* Blue for existing */
-  border: 1px solid #6366f1;
-}
-.status-new {
-  background-color: #d1fae5; /* Green for new */
-  border: 1px solid #10b981;
-}
+    #customer-selection-area { margin-bottom: 1.5rem; }
+    #customer-search-wrapper { position: relative; }
+    #customer-search-results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 0.375rem 0.375rem; max-height: 250px; overflow-y: auto; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .result-item { padding: 0.75rem; cursor: pointer; border-bottom: 1px solid #e5e7eb; }
+    .result-item:hover { background-color: #eff6ff; }
+    .result-item:last-child { border-bottom: none; }
+    .result-item p { margin: 0; }
+    .result-item .name { font-weight: 600; }
+    .result-item .details { font-size: 0.875rem; color: #6b7280; }
+    .result-item.new-customer-option { color: var(--accent); font-weight: bold; }
+    #selected-customer-display { background: #eef2ff; padding: 1rem; border-radius: 0.375rem; border-left: 5px solid var(--accent); }
+    #selected-customer-display h4, #selected-customer-display p { margin: 0 0 0.5rem 0; }
+    #selected-customer-display h4 { font-size: 1rem; color: #3730a3; }
+    #selected-customer-details { font-size: 0.9rem; }
+    
     @media (min-width: 640px) { header h1 { font-size: 1.5rem; } }
   </style>
 </head>
@@ -116,57 +85,32 @@
   </header>
 
   <main id="main-content">
-   <nav>
+    <nav>
       <button data-section="dashboard" class="active">Dashboard</button>
       <button data-section="customers">Customers</button>
       <button data-section="inventory">Inventory</button>
       <button data-section="create-bill">Create Bill</button>
       <button data-section="bills">Bills</button>
     </nav>
-<section id="dashboard" class="app-section active">
-  <h2>Sales Dashboard</h2>
-  
-  <!-- Filters -->
-  <div class="filters">
-    <label for="start-date">From:</label>
-    <input type="date" id="start-date">
-    <label for="end-date">To:</label>
-    <input type="date" id="end-date">
-  </div>
-  
-  <!-- Key Metrics (KPIs) -->
-  <div class="kpi-container">
-    <div class="kpi-card">
-      <h4>Total Sales</h4>
-      <p id="total-sales">₹0.00</p>
-    </div>
-    <div class="kpi-card">
-      <h4>Total Bills</h4>
-      <p id="total-bills">0</p>
-    </div>
-    <div class="kpi-card">
-      <h4>Average Bill Value</h4>
-      <p id="avg-bill-value">₹0.00</p>
-    </div>
-  </div>
-  
-  <!-- Top Selling Products -->
-  <h3>Top Selling Products (by Revenue)</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Product Name</th>
-        <th>Quantity Sold</th>
-        <th>Total Revenue</th>
-      </tr>
-    </thead>
-    <tbody id="top-products-body">
-      <!-- Data will be inserted here by JS -->
-    </tbody>
-  </table>
-</section>
+    
+    <section id="dashboard" class="app-section active">
+      <h2>Sales Dashboard</h2>
+      <div class="filters">
+        <label for="start-date">From:</label> <input type="date" id="start-date">
+        <label for="end-date">To:</label> <input type="date" id="end-date">
+      </div>
+      <div class="kpi-container">
+        <div class="kpi-card"><h4>Total Sales</h4><p id="total-sales">₹0.00</p></div>
+        <div class="kpi-card"><h4>Total Bills</h4><p id="total-bills">0</p></div>
+        <div class="kpi-card"><h4>Average Bill Value</h4><p id="avg-bill-value">₹0.00</p></div>
+      </div>
+      <h3>Top Selling Products (by Revenue)</h3>
+      <table>
+        <thead><tr><th>Product Name</th><th>Quantity Sold</th><th>Total Revenue</th></tr></thead>
+        <tbody id="top-products-body"></tbody>
+      </table>
+    </section>
 
-<!-- NEW "Customers" Section -->
     <section id="customers" class="app-section">
       <h2>Customer Management</h2>
       <form id="add-customer-form">
@@ -175,38 +119,39 @@
         <button class="primary" type="submit">Add Customer</button>
       </form>
       <table>
-        <thead>
-          <tr>
-            <th>Customer ID</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Customer ID</th><th>Name</th><th>Phone</th><th>Actions</th></tr></thead>
         <tbody id="customers-body"></tbody>
       </table>
     </section>
-    <!-- Inventory -->
-    <section id="inventory" class="app-section active">
-      <h2>Inventory</h2>
-      <form id="add-item-form">
-        <input id="item-name" type="text" placeholder="Item Name" required />
-        <input id="item-price" type="number" placeholder="Price" step="0.01" min="0" required />
-        <input id="item-qty" type="number" placeholder="Quantity" min="0" required />
-        <button class="primary" type="submit">Add</button>
-      </form>
-      <table><thead><tr><th>Name</th><th>Price</th><th>Qty</th><th>Actions</th></tr></thead><tbody id="inventory-body"></tbody></table>
+
+    <section id="inventory" class="app-section">
+        <h2>Inventory</h2>
+        <form id="add-item-form">
+            <input id="item-name" type="text" placeholder="Item Name" required />
+            <input id="item-price" type="number" placeholder="Price" step="0.01" min="0" required />
+            <input id="item-qty" type="number" placeholder="Quantity" min="0" required />
+            <button class="primary" type="submit">Add</button>
+        </form>
+        <table><thead><tr><th>Name</th><th>Price</th><th>Qty</th><th>Actions</th></tr></thead><tbody id="inventory-body"></tbody></table>
     </section>
 
-    <!-- Create Bill -->
     <section id="create-bill" class="app-section">
       <h2>Create Bill</h2>
-      <form id="customer-form">
-  <input id="bill-customer-name" type="text" placeholder="Customer Name" required>
-  <input id="bill-customer-phone" type="tel" placeholder="Customer Phone" required>
-</form>
-<div id="customer-status-display" class="customer-status" style="display: none;">
-  <!-- This will be populated by JS -->
+      <div id="customer-selection-area">
+  <div id="customer-search-wrapper" style="display: block;">
+    <label><b>Search or Add Customer:</b></label>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <input type="search" id="customer-name-search" placeholder="By Name..." style="flex: 1 1 180px;">
+      <input type="search" id="customer-phone-search" placeholder="By Phone..." style="flex: 1 1 180px;">
+    </div>
+    <div id="customer-search-results"></div>
+  </div>
+
+  <div id="selected-customer-display" style="display: none;">
+    <h4>✓ Selected Customer:</h4>
+    <div id="selected-customer-details"></div>
+    <button type="button" id="change-customer-btn" class="secondary">Change</button>
+  </div>
 </div>
       <form id="add-line-form">
         <select id="select-item" required></select>
@@ -218,7 +163,6 @@
       <button id="save-bill-btn" class="primary">Save Bill</button>
     </section>
 
-    <!-- Bills -->
     <section id="bills" class="app-section">
       <h2>Bills</h2>
       <input id="bill-search" type="text" placeholder="Search by customer name" style="width:100%;padding:0.5rem;margin-top:0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;" />
@@ -229,23 +173,20 @@
   <div id="login-prompt">
     <p>Please sign in to manage your bills.</p>
   </div>
-  <!-- jsPDF Library -->
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-   <script>
-
-// 🔐 Your Firebase Config
-const firebaseConfig = {
-      apiKey: "AIzaSyCQ2wpSkBT1QTUz6UyQ5ywwyFXkeymbN1U",
-  authDomain: "billing-app-76e0b.firebaseapp.com",
-  projectId: "billing-app-76e0b",
-  storageBucket: "billing-app-76e0b.firebasestorage.app",
-  messagingSenderId: "765632923218",
-  appId: "1:765632923218:web:d0681089ec9328f57f418b"
+  <script>
+    // 🔐 Your Firebase Config
+    const firebaseConfig = {
+    apiKey: "AIzaSyCQ2wpSkBT1QTUz6UyQ5ywwyFXkeymbN1U",
+    authDomain: "billing-app-76e0b.firebaseapp.com",
+    projectId: "billing-app-76e0b",
+    storageBucket: "billing-app-76e0b.firebasestorage.app",
+    messagingSenderId: "765632923218",
+    appId: "1:765632923218:web:d0681089ec9328f57f418b"
 };
 
 // Initialize Firebase
@@ -258,40 +199,22 @@ const googleProvider = new firebase.auth.GoogleAuthProvider();
 let currentUser = null;
 let inventoryCollection, billsCollection, customersCollection;
 let inventoryUnsubscribe = null, billsUnsubscribe = null, customersUnsubscribe = null;
+let localInventoryCache = [], localBillsCache = [], localCustomersCache = [];
+let currentBillLines = [], currentBillCustomer = null;
 
-let localInventoryCache = [];
-let localBillsCache = [];
-let localCustomersCache = [];
-let currentBillLines = [];
-let currentBillCustomer = null; // State for the customer on the current bill
-
-// General Elements
-const authButton = document.getElementById('auth-button');
-const userInfo = document.getElementById('user-info');
-const mainContent = document.getElementById('main-content');
-const loginPrompt = document.getElementById('login-prompt');
-
-// Inventory Elements
-const inventoryBody = document.getElementById('inventory-body');
-
-// Bill Creation Elements
-const selectItem = document.getElementById('select-item');
-const billLinesBody = document.getElementById('bill-lines');
-const billTotalEl = document.getElementById('bill-total');
-const billCustomerNameInput = document.getElementById('bill-customer-name');
-const billCustomerPhoneInput = document.getElementById('bill-customer-phone');
-const customerStatusDisplay = document.getElementById('customer-status-display');
-
-// Bills List Elements
-const billSearchInput = document.getElementById('bill-search');
-const billsBody = document.getElementById('bills-body');
-
-// Dashboard Elements
-const startDateInput = document.getElementById('start-date');
-const endDateInput = document.getElementById('end-date');
-
-// Customer Elements
-const customersBody = document.getElementById('customers-body');
+const authButton = document.getElementById('auth-button'), userInfo = document.getElementById('user-info'),
+      mainContent = document.getElementById('main-content'), loginPrompt = document.getElementById('login-prompt'),
+      inventoryBody = document.getElementById('inventory-body'), selectItem = document.getElementById('select-item'),
+      billLinesBody = document.getElementById('bill-lines'), billTotalEl = document.getElementById('bill-total'),
+      billSearchInput = document.getElementById('bill-search'), billsBody = document.getElementById('bills-body'),
+      startDateInput = document.getElementById('start-date'), endDateInput = document.getElementById('end-date'),
+      customersBody = document.getElementById('customers-body'),
+      customerNameSearch = document.getElementById('customer-name-search'),
+      customerPhoneSearch = document.getElementById('customer-phone-search'),
+      customerSearchResults = document.getElementById('customer-search-results'),
+      selectedCustomerDisplay = document.getElementById('selected-customer-display'),
+      customerSearchWrapper = document.getElementById('customer-search-wrapper'),
+      selectedCustomerDetails = document.getElementById('selected-customer-details');
 
 // --- AUTHENTICATION ---
 auth.onAuthStateChanged(user => {
@@ -301,19 +224,15 @@ auth.onAuthStateChanged(user => {
         authButton.textContent = 'Sign Out';
         mainContent.classList.add('visible');
         loginPrompt.style.display = 'none';
-
         const userDoc = db.collection('users').doc(currentUser.uid);
         inventoryCollection = userDoc.collection('inventory');
         billsCollection = userDoc.collection('bills');
         customersCollection = userDoc.collection('customers');
-
         listenToInventory();
         listenToBills();
         listenToCustomers();
-        
         document.querySelector('button[data-section="dashboard"]').click();
     } else {
-        // ... (rest of your auth sign-out logic is correct)
         currentUser = null;
         if (inventoryUnsubscribe) inventoryUnsubscribe();
         if (billsUnsubscribe) billsUnsubscribe();
@@ -322,23 +241,15 @@ auth.onAuthStateChanged(user => {
         authButton.textContent = 'Sign In with Google';
         mainContent.classList.remove('visible');
         loginPrompt.style.display = 'block';
-        inventoryBody.innerHTML = '';
-        billsBody.innerHTML = '';
-        customersBody.innerHTML = '';
-        localInventoryCache = [];
-        localBillsCache = [];
-        localCustomersCache = [];
-        currentBillLines = [];
-        renderBillLines();
+        inventoryBody.innerHTML = ''; billsBody.innerHTML = ''; customersBody.innerHTML = '';
+        localInventoryCache = []; localBillsCache = []; localCustomersCache = [];
+        currentBillLines = []; renderBillLines();
     }
 });
 
 authButton.addEventListener('click', () => {
-    if (currentUser) {
-        auth.signOut();
-    } else {
-        auth.signInWithPopup(googleProvider).catch(error => console.error("Sign-in error", error));
-    }
+    if (currentUser) { auth.signOut(); } 
+    else { auth.signInWithPopup(googleProvider).catch(error => console.error("Sign-in error", error)); }
 });
 
 // --- NAVIGATION ---
@@ -347,9 +258,7 @@ document.querySelectorAll('nav button').forEach(btn => btn.addEventListener('cli
     document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.section).classList.add('active');
-    if (btn.dataset.section === 'dashboard') {
-        initializeDashboard();
-    }
+    if (btn.dataset.section === 'dashboard') { initializeDashboard(); }
 }));
 
 /* ---------- CUSTOMER MANAGEMENT ---------- */
@@ -364,199 +273,165 @@ function listenToCustomers() {
 function renderCustomers() {
     customersBody.innerHTML = localCustomersCache.map(c => `
         <tr id="customer-${c.id}">
-            <td>${c.customerId || 'N/A'}</td>
-            <td>${c.name}</td>
-            <td>${c.phone}</td>
-            <td>
-                <button class="secondary" onclick="editCustomer('${c.id}')">Edit</button>
-                <button class="danger" onclick="deleteCustomer('${c.id}')">Delete</button>
-            </td>
+            <td>${c.customerId || 'N/A'}</td><td>${c.name}</td><td>${c.phone}</td>
+            <td><button class="secondary" onclick="alert('Edit not implemented yet.')">Edit</button><button class="danger" onclick="deleteCustomer('${c.id}')">Delete</button></td>
         </tr>`).join('');
 }
 
-document.getElementById('add-customer-form').addEventListener('submit', async (e) => {
+document.getElementById('add-customer-form').addEventListener('submit', async e => {
     e.preventDefault();
-    const name = document.getElementById('new-customer-name').value.trim();
-    const phone = document.getElementById('new-customer-phone').value.trim();
-
+    const name = document.getElementById('new-customer-name').value.trim(), phone = document.getElementById('new-customer-phone').value.trim();
     if (!name || !phone) return;
-
-    const lastIdNum = localCustomersCache.reduce((max, c) => {
-        const num = parseInt(c.customerId?.split('-')[1] || 0, 10);
-        return Math.max(max, num);
-    }, 0);
+    // Check if customer with this phone already exists
+    if (localCustomersCache.some(c => c.phone === phone)) {
+        alert('A customer with this phone number already exists.');
+        return;
+    }
+    const lastIdNum = localCustomersCache.reduce((max, c) => Math.max(max, parseInt(c.customerId?.split('-')[1] || 0, 10)), 0);
     const newCustomerId = `CUST-${(lastIdNum + 1).toString().padStart(3, '0')}`;
-    
     await customersCollection.add({ name, phone, customerId: newCustomerId });
     e.target.reset();
 });
 
 async function deleteCustomer(id) {
-    if (confirm('Are you sure? This cannot be undone.')) {
-        await customersCollection.doc(id).delete();
-    }
-}
-// Add empty edit/save functions for now to prevent errors. You can implement these later.
-function editCustomer(id) { alert('Edit functionality to be added!'); }
-function saveCustomer(id) { /* ... */ }
-window.deleteCustomer = deleteCustomer;
-window.editCustomer = editCustomer;
-window.saveCustomer = saveCustomer;
-
-/* ---------- INVENTORY (Existing code is correct) ---------- */
-function listenToInventory() { /* ... your existing listenToInventory code ... */ }
-document.getElementById('add-item-form').addEventListener('submit', async e => { /* ... */ });
-function editItem(id) { /* ... */ }
-async function saveItem(id) { /* ... */ }
-async function removeItem(id) { /* ... */ }
-
-/* ---------- CREATE BILL (with new Customer Logic) ---------- */
-function updateItemSelect() { /* ... your existing updateItemSelect code ... */ }
-document.getElementById('add-line-form').addEventListener('submit', e => { /* ... */ });
-function renderBillLines() { /* ... */ }
-function removeLine(idx) { /* ... */ }
-function updateTotals() { /* ... */ }
-
-// NEW SMART CUSTOMER CHECK LOGIC
-billCustomerPhoneInput.addEventListener('blur', () => {
-    const phone = billCustomerPhoneInput.value.trim();
-    const name = billCustomerNameInput.value.trim();
-    if (!phone) { resetCustomerStatus(); return; }
-    const existingCustomer = localCustomersCache.find(c => c.phone === phone);
-    if (existingCustomer) {
-        billCustomerNameInput.value = existingCustomer.name;
-        customerStatusDisplay.textContent = `✓ Existing Customer: ${existingCustomer.name} (${existingCustomer.customerId})`;
-        customerStatusDisplay.className = 'customer-status status-existing';
-        customerStatusDisplay.style.display = 'block';
-        currentBillCustomer = { ...existingCustomer, isNew: false };
-    } else {
-        if (name) {
-            customerStatusDisplay.textContent = `+ New Customer: "${name}" will be created.`;
-            customerStatusDisplay.className = 'customer-status status-new';
-            customerStatusDisplay.style.display = 'block';
-            currentBillCustomer = { id: null, name, phone, isNew: true };
-        } else {
-            resetCustomerStatus();
-        }
-    }
-});
-
-billCustomerNameInput.addEventListener('input', resetCustomerStatus);
-
-function resetCustomerStatus() {
-    customerStatusDisplay.style.display = 'none';
-    customerStatusDisplay.textContent = '';
-    currentBillCustomer = null;
+    if (confirm('Are you sure? This cannot be undone.')) { await customersCollection.doc(id).delete(); }
 }
 
-// REPLACED 'save-bill-btn' LOGIC
-document.getElementById('save-bill-btn').addEventListener('click', async () => {
-    if (!currentBillLines.length) { alert('Add at least one item to the bill.'); return; }
-    if (!currentBillCustomer) { alert('Provide customer name and phone, then click away to verify.'); return; }
-    if (currentBillCustomer.isNew && !billCustomerNameInput.value.trim()) { alert('Customer name is required.'); return; }
-
-    const batch = db.batch();
-    const billTotal = currentBillLines.reduce((s, l) => s + l.qty * l.price, 0);
-    let finalCustomerId = currentBillCustomer.id;
-    let finalCustomerNumber = currentBillCustomer.customerId;
-
-    if (currentBillCustomer.isNew) {
-        const lastIdNum = localCustomersCache.reduce((max, c) => {
-            const num = parseInt(c.customerId?.split('-')[1] || 0, 10);
-            return Math.max(max, num);
-        }, 0);
-        const newCustomerNumber = `CUST-${(lastIdNum + 1).toString().padStart(3, '0')}`;
-        const newCustomerRef = customersCollection.doc();
-        batch.set(newCustomerRef, {
-            name: currentBillCustomer.name,
-            phone: currentBillCustomer.phone,
-            customerId: newCustomerNumber
-        });
-        finalCustomerId = newCustomerRef.id;
-        finalCustomerNumber = newCustomerNumber;
-    }
-
-    const newBillRef = billsCollection.doc();
-    batch.set(newBillRef, {
-        customer: currentBillCustomer.name,
-        phone: currentBillCustomer.phone,
-        customerId: finalCustomerId,
-        customerNumber: finalCustomerNumber,
-        total: billTotal,
-        lines: currentBillLines.map(({ id, name, price, qty }) => ({ id, name, price, qty })),
-        date: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    currentBillLines.forEach(line => {
-        const itemRef = inventoryCollection.doc(line.id);
-        batch.update(itemRef, { qty: firebase.firestore.FieldValue.increment(-line.qty) });
-    });
-
-    try {
-        await batch.commit();
-        alert('Bill saved successfully!');
-        currentBillLines = [];
-        renderBillLines();
-        resetCustomerStatus();
-        billCustomerNameInput.value = '';
-        billCustomerPhoneInput.value = '';
-        document.querySelector('button[data-section="bills"]').click();
-    } catch (error) {
-        console.error("Error saving bill: ", error);
-        alert("Failed to save bill. Check stock quantities and try again.");
-    }
-});
-
-/* ---------- BILLS LIST (Existing code is correct) ---------- */
-billSearchInput.addEventListener('input', () => listenToBills(billSearchInput.value.trim().toLowerCase()));
-function listenToBills(query = '') { /* ... your existing listenToBills code ... */ }
-function renderBillsList(bills) { /* ... your existing renderBillsList code ... */ }
-function toggleBillDetails(billId) { /* ... */ }
-
-/* ---------- DASHBOARD (Existing code is correct) ---------- */
-function initializeDashboard() { /* ... your existing initializeDashboard code ... */ }
-function updateDashboard() { /* ... */ }
-
-/* ---------- BILL PRINTING AND PDF (Existing code is correct) ---------- */
-function generateBillText(billId) { /* ... your existing generateBillText code ... */ }
-function downloadPdf(billId) { /* ... */ }
-function printBill(billId) { /* ... */ }
-
-// Make all functions accessible to HTML onclicks
-window.removeItem = removeItem; window.editItem = editItem; window.saveItem = saveItem;
-window.removeLine = removeLine; window.toggleBillDetails = toggleBillDetails;
-window.downloadPdf = downloadPdf; window.printBill = printBill;
-
-// Your existing inventory, bill rendering, dashboard, and PDF/Print functions
-// are mostly correct and have been included here implicitly.
-// I have stubbed them out with /* ... */ to save space, but you should
-// ensure your full, working functions are in place. The provided code
-// is designed to integrate with them seamlessly.
-
-// --- PASTE YOUR FULL WORKING FUNCTIONS FOR THESE ---
+/* ---------- INVENTORY ---------- */
 function listenToInventory() {if (inventoryUnsubscribe) inventoryUnsubscribe();inventoryUnsubscribe = inventoryCollection.orderBy('name').onSnapshot(snapshot => {localInventoryCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));inventoryBody.innerHTML = localInventoryCache.map(i => `<tr id="item-${i.id}"><td>${i.name}</td><td>${i.price.toFixed(2)}</td><td>${i.qty}</td><td><button class="secondary" onclick="editItem('${i.id}')">Edit</button><button class="danger" onclick="removeItem('${i.id}')">Delete</button></td></tr>`).join('');updateItemSelect();});}
 document.getElementById('add-item-form').addEventListener('submit', async e => {e.preventDefault();const name = document.getElementById('item-name').value.trim();const price = parseFloat(document.getElementById('item-price').value);const qty = parseInt(document.getElementById('item-qty').value, 10);if (!name || isNaN(price) || price < 0 || isNaN(qty) || qty < 0) return;await inventoryCollection.add({ name, price, qty });e.target.reset();});
-function editItem(id) {const item = localInventoryCache.find(i => i.id === id);if (!item) return;const itemRow = document.getElementById(`item-${id}`);itemRow.innerHTML = `<td><input id="edit-name-${id}" type="text" value="${item.name}" required></td><td><input id="edit-price-${id}" type="number" value="${item.price.toFixed(2)}" step="0.01" min="0" required></td><td><input id="edit-qty-${id}" type="number" value="${item.qty}" min="0" required></td><td><button class="primary" onclick="saveItem('${id}')">Save</button><button class="secondary" onclick="listenToInventory()">Cancel</button></td>`;}
+function editItem(id) {const item = localInventoryCache.find(i => i.id === id);if (!item) return;const itemRow = document.getElementById(`item-${id}`);itemRow.innerHTML = `<td><input id="edit-name-${id}" type="text" value="${item.name}" required></td><td><input id="edit-price-${id}" type="number" value="${item.price.toFixed(2)}" step="0.01" min="0" required></td><td><input id="edit-qty-${id}" type="number" value="${item.qty}" min="0" required></td><td><button class="primary" onclick="saveItem('${id}')">Save</button><button class="secondary" onclick="renderCustomers()">Cancel</button></td>`;}
 async function saveItem(id) {const newName = document.getElementById(`edit-name-${id}`).value.trim();const newPrice = parseFloat(document.getElementById(`edit-price-${id}`).value);const newQty = parseInt(document.getElementById(`edit-qty-${id}`).value, 10);if (!newName || isNaN(newPrice) || newPrice < 0 || isNaN(newQty) || newQty < 0) return;await inventoryCollection.doc(id).update({ name: newName, price: newPrice, qty: newQty });}
 async function removeItem(id) {if (confirm('Are you sure?')) {await inventoryCollection.doc(id).delete();}}
+
+/* ---------- CREATE BILL ---------- */
 function updateItemSelect() {selectItem.innerHTML = '<option value="" disabled selected>Select an item</option>' + localInventoryCache.filter(i => i.qty > 0).map(i => `<option value="${i.id}">${i.name} (Qty: ${i.qty})</option>`).join('');}
 document.getElementById('add-line-form').addEventListener('submit', e => {e.preventDefault();const id = selectItem.value;const qty = parseInt(document.getElementById('line-qty').value, 10);const item = localInventoryCache.find(i => i.id === id);if (!item || qty < 1) { alert('Select an item and quantity.'); return; }const remainingQtyInStock = item.qty - (currentBillLines.find(l => l.id === id)?.qty || 0);if (qty > remainingQtyInStock) { alert(`Not enough stock. Only ${remainingQtyInStock} available.`); return; }const existingLine = currentBillLines.find(line => line.id === id);if (existingLine) {existingLine.qty += qty;} else {currentBillLines.push({ ...item, qty });}renderBillLines();e.target.reset();});
 function renderBillLines() {billLinesBody.innerHTML = currentBillLines.map((l, idx) => `<tr><td>${l.name}</td><td>${l.qty}</td><td>${l.price.toFixed(2)}</td><td>${(l.qty * l.price).toFixed(2)}</td><td><button class="danger" onclick="removeLine(${idx})">X</button></td></tr>`).join('');updateTotals();}
 function removeLine(idx) {currentBillLines.splice(idx, 1);renderBillLines();}
 function updateTotals() {billTotalEl.textContent = currentBillLines.reduce((s, l) => s + l.qty * l.price, 0).toFixed(2);}
-function listenToBills(query = '') {if (billsUnsubscribe) billsUnsubscribe();let queryRef = billsCollection.orderBy('date', 'desc');billsUnsubscribe = queryRef.onSnapshot(snapshot => {localBillsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));let billsToRender = [...localBillsCache];if (query) {billsToRender = billsToRender.filter(b => b.customer.toLowerCase().includes(query));}renderBillsList(billsToRender);});}
-function renderBillsList(bills) {billsBody.innerHTML = bills.map(b => {const itemSummary = b.lines.length > 1 ? `${b.lines.length} items` : `${b.lines[0].name} (x${b.lines[0].qty})`;const detailContent = `<div id="bill-content-${b.id}"><h3>Bill Details</h3><p><strong>Customer:</strong> ${b.customer}</p><p><strong>Phone:</strong> ${b.phone || 'N/A'}</p><p><strong>Date:</strong> ${b.date ? b.date.toDate().toLocaleString() : 'Processing...'}</p><table><thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead><tbody>${b.lines.map(l => `<tr><td>${l.name}</td><td>${l.price.toFixed(2)}</td><td>${l.qty}</td><td>${(l.price * l.qty).toFixed(2)}</td></tr>`).join('')}<tr class="total-row"><td colspan="3">Grand Total</td><td>${b.total.toFixed(2)}</td></tr></tbody></table></div><div style="margin-top: 1rem; text-align: right;"><button class="secondary" onclick="printBill('${b.id}')">Print</button><button class="primary" onclick="downloadPdf('${b.id}')">Download PDF</button></div>`;return `<tr class="bill-summary" onclick="toggleBillDetails('${b.id}')"><td>${b.date ? b.date.toDate().toLocaleString() : 'Processing...'}</td><td>${b.customer}</td><td>${itemSummary}</td><td>${b.total.toFixed(2)}</td></tr><tr id="detail-${b.id}" class="bill-details"><td colspan="4">${detailContent}</td></tr>`;}).join('');}
-function toggleBillDetails(billId) {const detailRow = document.getElementById(`detail-${billId}`);if (!detailRow) return;const isCurrentlyActive = detailRow.classList.contains('active');document.querySelectorAll('.bill-details.active').forEach(row => row.classList.remove('active'));if (!isCurrentlyActive) {detailRow.classList.add('active');}}
-function initializeDashboard() {const endDate = new Date();const startDate = new Date();startDate.setDate(endDate.getDate() - 30);endDateInput.value = endDate.toISOString().split('T')[0];startDateInput.value = startDate.toISOString().split('T')[0];startDateInput.addEventListener('change', updateDashboard);endDateInput.addEventListener('change', updateDashboard);updateDashboard();}
-function updateDashboard() {if (!localBillsCache.length) {document.getElementById('total-sales').textContent = '₹0.00';document.getElementById('total-bills').textContent = '0';document.getElementById('avg-bill-value').textContent = '₹0.00';document.getElementById('top-products-body').innerHTML = '<tr><td colspan="3">No sales data.</td></tr>';return;}const startDate = new Date(startDateInput.value);const endDate = new Date(endDateInput.value);endDate.setHours(23, 59, 59, 999);const filteredBills = localBillsCache.filter(bill => {const billDate = bill.date.toDate();return billDate >= startDate && billDate <= endDate;});const totalSales = filteredBills.reduce((sum, bill) => sum + bill.total, 0);const totalBills = filteredBills.length;const avgBillValue = totalBills > 0 ? totalSales / totalBills : 0;document.getElementById('total-sales').textContent = `₹${totalSales.toFixed(2)}`;document.getElementById('total-bills').textContent = totalBills;document.getElementById('avg-bill-value').textContent = `₹${avgBillValue.toFixed(2)}`;const productStats = new Map();filteredBills.forEach(bill => {bill.lines.forEach(line => {const existing = productStats.get(line.name) || { qty: 0, revenue: 0 };productStats.set(line.name, {qty: existing.qty + line.qty,revenue: existing.revenue + (line.price * line.qty)});});});const topProducts = Array.from(productStats.entries()).map(([name, stats]) => ({ name, ...stats })).sort((a, b) => b.revenue - a.revenue).slice(0, 10);const topProductsBody = document.getElementById('top-products-body');if (topProducts.length > 0) {topProductsBody.innerHTML = topProducts.map(p => `<tr><td>${p.name}</td><td>${p.qty}</td><td>₹${p.revenue.toFixed(2)}</td></tr>`).join('');} else {topProductsBody.innerHTML = '<tr><td colspan="3">No sales data for this period.</td></tr>';}}
-function generateBillText(billId) {const bill = localBillsCache.find(b => b.id === billId);if (!bill) return { text: '', customer: 'Unknown' };let billText = `BILLING APP INVOICE\n===================================\nCustomer: ${bill.customer}\nPhone: ${bill.phone || 'N/A'}\nDate: ${bill.date.toDate().toLocaleString()}\n===================================\n\nItems:\n--------------------------------------------------`;bill.lines.forEach(line => {const name = line.name.padEnd(20, ' ');const qty = `x ${line.qty}`.padEnd(5, ' ');const price = `@ ${line.price.toFixed(2)}`.padEnd(10, ' ');const subtotal = line.qty * line.price;billText += `\n${name}${qty}${price} = ${subtotal.toFixed(2)}`;});billText += `\n--------------------------------------------------\n\nGRAND TOTAL: ${bill.total.toFixed(2)}`;return { text: billText, customer: bill.customer };}
-function downloadPdf(billId) {const { jsPDF } = window.jspdf;const doc = new jsPDF();const { text, customer } = generateBillText(billId);doc.setFont("Courier");doc.setFontSize(12);doc.text(text, 10, 10);doc.save(`bill-${customer.replace(/\s+/g, '-')}-${billId.substring(0,5)}.pdf`);}
-function printBill(billId) {const { text } = generateBillText(billId);const iframe = document.createElement('iframe');iframe.style.display = 'none';document.body.appendChild(iframe);const iframeDoc = iframe.contentWindow.document;iframeDoc.open();iframeDoc.write(`<pre>${text}</pre>`);iframeDoc.close();iframe.contentWindow.focus();iframe.contentWindow.print();setTimeout(() => {document.body.removeChild(iframe);}, 1000);}
 
-</script>
+// UNIFIED TWO-FIELD CUSTOMER SEARCH
+customerNameSearch.addEventListener('input', handleCustomerSearch);
+customerPhoneSearch.addEventListener('input', handleCustomerSearch);
 
-  <!-- 🔧 App Logic (Paste your old JavaScript here after auth init) -->
-  <!-- <script>YOUR APP LOGIC SCRIPT FROM OLD CODE HERE</script> -->
+function handleCustomerSearch() {
+    const nameQuery = customerNameSearch.value.trim().toLowerCase();
+    const phoneQuery = customerPhoneSearch.value.trim();
+    if (nameQuery.length < 1 && phoneQuery.length < 1) { customerSearchResults.style.display = 'none'; return; }
+    let results = localCustomersCache.filter(c => {
+        const nameMatch = nameQuery ? c.name.toLowerCase().includes(nameQuery) : true;
+        const phoneMatch = phoneQuery ? c.phone.includes(phoneQuery) : true;
+        return nameMatch && phoneMatch;
+    }).slice(0, 10);
+    customerSearchResults.innerHTML = '';
+    if (results.length > 0) {
+        results.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'result-item';
+            item.innerHTML = `<p class="name">${c.name || 'N/A'}</p><p class="details">${c.customerId} | ${c.phone}</p>`;
+            item.onclick = () => selectCustomerForBill(c.id);
+            customerSearchResults.appendChild(item);
+        });
+    }
+    if (nameQuery && phoneQuery) {
+        const createNewItem = document.createElement('div');
+        createNewItem.className = 'result-item new-customer-option';
+        createNewItem.innerHTML = `<p>+ Create New Customer: "${customerNameSearch.value}" - "${phoneQuery}"</p>`;
+        createNewItem.onclick = () => createNewCustomerFromSearch(customerNameSearch.value, phoneQuery);
+        customerSearchResults.appendChild(createNewItem);
+    }
+    customerSearchResults.style.display = 'block';
+}
+document.addEventListener('click', e => { if (!customerSearchWrapper.contains(e.target)) { customerSearchResults.style.display = 'none'; } });
 
+function selectCustomerForBill(id) {
+    currentBillCustomer = { ...localCustomersCache.find(c => c.id === id), isNew: false };
+    if (!currentBillCustomer) return;
+    displaySelectedCustomer();
+}
+
+function createNewCustomerFromSearch(name, phone) {
+    currentBillCustomer = { id: null, name, phone, isNew: true };
+    displaySelectedCustomer();
+}
+
+function displaySelectedCustomer() {
+    let detailsHTML = '';
+    if (currentBillCustomer.isNew) {
+        detailsHTML = `<p><strong>Name:</strong> ${currentBillCustomer.name}</p><p><strong>Phone:</strong> ${currentBillCustomer.phone}</p><p style="color: #10b981; font-weight: bold;">(New customer will be created when bill is saved)</p>`;
+    } else {
+        detailsHTML = `<p><strong>Name:</strong> ${currentBillCustomer.name}</p><p><strong>ID:</strong> ${currentBillCustomer.customerId} | <strong>Phone:</strong> ${currentBillCustomer.phone}</p>`;
+    }
+    selectedCustomerDetails.innerHTML = detailsHTML;
+    customerSearchWrapper.style.display = 'none';
+    selectedCustomerDisplay.style.display = 'block';
+    customerSearchResults.style.display = 'none';
+    customerNameSearch.value = '';
+    customerPhoneSearch.value = '';
+}
+
+document.getElementById('change-customer-btn').addEventListener('click', () => {
+    currentBillCustomer = null;
+    customerSearchWrapper.style.display = 'block';
+    selectedCustomerDisplay.style.display = 'none';
+    customerNameSearch.focus();
+});
+
+// SAVE BILL LOGIC
+document.getElementById('save-bill-btn').addEventListener('click', async () => {
+    if (!currentBillLines.length) { alert('Add at least one item to the bill.'); return; }
+    if (!currentBillCustomer) { alert('Please select or create a customer first.'); return; }
+    const batch = db.batch();
+    const billTotal = currentBillLines.reduce((s, l) => s + l.qty * l.price, 0);
+    let finalCustomerId = currentBillCustomer.id, finalCustomerNumber = currentBillCustomer.customerId;
+    if (currentBillCustomer.isNew) {
+        const lastIdNum = localCustomersCache.reduce((max, c) => Math.max(max, parseInt(c.customerId?.split('-')[1] || 0, 10)), 0);
+        const newCustomerNumber = `CUST-${(lastIdNum + 1).toString().padStart(3, '0')}`;
+        const newCustomerRef = customersCollection.doc();
+        batch.set(newCustomerRef, { name: currentBillCustomer.name, phone: currentBillCustomer.phone, customerId: newCustomerNumber });
+        finalCustomerId = newCustomerRef.id;
+        finalCustomerNumber = newCustomerNumber;
+    }
+    const newBillRef = billsCollection.doc();
+    batch.set(newBillRef, { customer: currentBillCustomer.name, phone: currentBillCustomer.phone, customerId: finalCustomerId, customerNumber: finalCustomerNumber, total: billTotal, lines: currentBillLines.map(({ id, name, price, qty }) => ({ id, name, price, qty })), date: firebase.firestore.FieldValue.serverTimestamp() });
+    currentBillLines.forEach(line => {
+        const itemRef = inventoryCollection.doc(line.id);
+        batch.update(itemRef, { qty: firebase.firestore.FieldValue.increment(-line.qty) });
+    });
+    try {
+        await batch.commit();
+        alert('Bill saved successfully!');
+        currentBillLines = []; renderBillLines();
+        document.getElementById('change-customer-btn').click();
+        document.querySelector('button[data-section="bills"]').click();
+    } catch (error) { console.error("Error saving bill: ", error); alert("Failed to save bill."); }
+});
+
+/* ---------- BILLS LIST ---------- */
+billSearchInput.addEventListener('input', () => listenToBills(billSearchInput.value.trim().toLowerCase()));
+function listenToBills(query = '') { if (billsUnsubscribe) billsUnsubscribe(); billsUnsubscribe = billsCollection.orderBy('date', 'desc').onSnapshot(snapshot => { localBillsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); let billsToRender = [...localBillsCache]; if (query) { billsToRender = billsToRender.filter(b => (b.customer || '').toLowerCase().includes(query)); } renderBillsList(billsToRender); }); }
+function renderBillsList(bills) { billsBody.innerHTML = bills.map(b => { const itemSummary = b.lines.length > 1 ? `${b.lines.length} items` : `${b.lines[0].name} (x${b.lines[0].qty})`; const detailContent = `<div id="bill-content-${b.id}"><h3>Bill Details</h3><p><strong>Customer:</strong> ${b.customer}</p><p><strong>Phone:</strong> ${b.phone || 'N/A'}</p><p><strong>Date:</strong> ${b.date ? b.date.toDate().toLocaleString() : 'Processing...'}</p><table><thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead><tbody>${b.lines.map(l => `<tr><td>${l.name}</td><td>${l.price.toFixed(2)}</td><td>${l.qty}</td><td>${(l.price * l.qty).toFixed(2)}</td></tr>`).join('')}<tr class="total-row"><td colspan="3">Grand Total</td><td>${b.total.toFixed(2)}</td></tr></tbody></table></div><div style="margin-top: 1rem; text-align: right;"><button class="secondary" onclick="printBill('${b.id}')">Print</button><button class="primary" onclick="downloadPdf('${b.id}')">Download PDF</button></div>`; return `<tr class="bill-summary" onclick="toggleBillDetails('${b.id}')"><td>${b.date ? b.date.toDate().toLocaleString() : 'Processing...'}</td><td>${b.customer}</td><td>${itemSummary}</td><td>${b.total.toFixed(2)}</td></tr><tr id="detail-${b.id}" class="bill-details"><td colspan="4">${detailContent}</td></tr>`; }).join(''); }
+function toggleBillDetails(billId) { const detailRow = document.getElementById(`detail-${billId}`); if (!detailRow) return; const isCurrentlyActive = detailRow.classList.contains('active'); document.querySelectorAll('.bill-details.active').forEach(row => row.classList.remove('active')); if (!isCurrentlyActive) { detailRow.classList.add('active'); } }
+
+/* ---------- DASHBOARD ---------- */
+function initializeDashboard() { const endDate = new Date(); const startDate = new Date(); startDate.setDate(endDate.getDate() - 30); endDateInput.value = endDate.toISOString().split('T')[0]; startDateInput.value = startDate.toISOString().split('T')[0]; startDateInput.addEventListener('change', updateDashboard); endDateInput.addEventListener('change', updateDashboard); updateDashboard(); }
+function updateDashboard() { if (!localBillsCache.length) { document.getElementById('total-sales').textContent = '₹0.00'; document.getElementById('total-bills').textContent = '0'; document.getElementById('avg-bill-value').textContent = '₹0.00'; document.getElementById('top-products-body').innerHTML = '<tr><td colspan="3">No sales data.</td></tr>'; return; } const startDate = new Date(startDateInput.value); const endDate = new Date(endDateInput.value); endDate.setHours(23, 59, 59, 999); const filteredBills = localBillsCache.filter(bill => { const billDate = bill.date ? bill.date.toDate() : new Date(0); return billDate >= startDate && billDate <= endDate; }); const totalSales = filteredBills.reduce((sum, bill) => sum + bill.total, 0); const totalBills = filteredBills.length; const avgBillValue = totalBills > 0 ? totalSales / totalBills : 0; document.getElementById('total-sales').textContent = `₹${totalSales.toFixed(2)}`; document.getElementById('total-bills').textContent = totalBills; document.getElementById('avg-bill-value').textContent = `₹${avgBillValue.toFixed(2)}`; const productStats = new Map(); filteredBills.forEach(bill => { (bill.lines || []).forEach(line => { const existing = productStats.get(line.name) || { qty: 0, revenue: 0 }; productStats.set(line.name, { qty: existing.qty + line.qty, revenue: existing.revenue + (line.price * line.qty) }); }); }); const topProducts = Array.from(productStats.entries()).map(([name, stats]) => ({ name, ...stats })).sort((a, b) => b.revenue - a.revenue).slice(0, 10); const topProductsBody = document.getElementById('top-products-body'); if (topProducts.length > 0) { topProductsBody.innerHTML = topProducts.map(p => `<tr><td>${p.name}</td><td>${p.qty}</td><td>₹${p.revenue.toFixed(2)}</td></tr>`).join(''); } else { topProductsBody.innerHTML = '<tr><td colspan="3">No sales data for this period.</td></tr>'; } }
+
+/* ---------- BILL PRINTING AND PDF ---------- */
+function generateBillText(billId) { const bill = localBillsCache.find(b => b.id === billId); if (!bill) return { text: '', customer: 'Unknown' }; let billText = `BILLING APP INVOICE\n===================================\nCustomer: ${bill.customer}\nPhone: ${bill.phone || 'N/A'}\nDate: ${bill.date ? bill.date.toDate().toLocaleString() : 'N/A'}\n===================================\n\nItems:\n--------------------------------------------------`; (bill.lines || []).forEach(line => { const name = (line.name || '').padEnd(20, ' '); const qty = `x ${line.qty}`.padEnd(5, ' '); const price = `@ ${line.price.toFixed(2)}`.padEnd(10, ' '); const subtotal = line.qty * line.price; billText += `\n${name}${qty}${price} = ${subtotal.toFixed(2)}`; }); billText += `\n--------------------------------------------------\n\nGRAND TOTAL: ${bill.total.toFixed(2)}`; return { text: billText, customer: bill.customer }; }
+function downloadPdf(billId) { const { jsPDF } = window.jspdf; const doc = new jsPDF(); const { text, customer } = generateBillText(billId); doc.setFont("Courier"); doc.setFontSize(12); doc.text(text, 10, 10); doc.save(`bill-${(customer || 'customer').replace(/\s+/g, '-')}-${billId.substring(0,5)}.pdf`); }
+function printBill(billId) { const { text } = generateBillText(billId); const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe); const iframeDoc = iframe.contentWindow.document; iframeDoc.open(); iframeDoc.write(`<pre>${text}</pre>`); iframeDoc.close(); iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { document.body.removeChild(iframe); }, 1000); }
+
+// Make functions globally accessible
+window.removeItem = removeItem; window.editItem = editItem; window.saveItem = saveItem;
+window.removeLine = removeLine; window.toggleBillDetails = toggleBillDetails;
+window.downloadPdf = downloadPdf; window.printBill = printBill;
+window.deleteCustomer = deleteCustomer;
+window.selectCustomerForBill = selectCustomerForBill;
+window.createNewCustomerFromSearch = createNewCustomerFromSearch;
+
+
+  </script>
 </body>
 </html>
