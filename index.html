@@ -104,11 +104,16 @@
         <div class="kpi-card"><h4>Total Bills</h4><p id="total-bills">0</p></div>
         <div class="kpi-card"><h4>Average Bill Value</h4><p id="avg-bill-value">₹0.00</p></div>
       </div>
-      <h3>Top Selling Products (by Revenue)</h3>
-      <table>
-        <thead><tr><th>Product Name</th><th>Quantity Sold</th><th>Total Revenue</th></tr></thead>
-        <tbody id="top-products-body"></tbody>
-      </table>
+       <!-- Chart container -->
+  <div class="chart-container" style="margin-top: 2rem;">
+    <h3>Sales Trend</h3>
+    <canvas id="sales-trend-chart"></canvas>
+  </div>
+  
+  <div class="chart-container" style="margin-top: 2rem;">
+    <h3>Top Selling Products (by Revenue)</h3>
+    <canvas id="top-products-chart"></canvas>
+  </div>
     </section>
 
     <section id="customers" class="app-section">
@@ -173,7 +178,8 @@
   <div id="login-prompt">
     <p>Please sign in to manage your bills.</p>
   </div>
-  
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -201,6 +207,8 @@ let inventoryCollection, billsCollection, customersCollection;
 let inventoryUnsubscribe = null, billsUnsubscribe = null, customersUnsubscribe = null;
 let localInventoryCache = [], localBillsCache = [], localCustomersCache = [];
 let currentBillLines = [], currentBillCustomer = null;
+let salesTrendChart = null; // <-- ADD THIS
+let topProductsChart = null; // <-- ADD THIS
 
 const authButton = document.getElementById('auth-button'), userInfo = document.getElementById('user-info'),
       mainContent = document.getElementById('main-content'), loginPrompt = document.getElementById('login-prompt'),
@@ -416,8 +424,170 @@ function toggleBillDetails(billId) { const detailRow = document.getElementById(`
 
 /* ---------- DASHBOARD ---------- */
 function initializeDashboard() { const endDate = new Date(); const startDate = new Date(); startDate.setDate(endDate.getDate() - 30); endDateInput.value = endDate.toISOString().split('T')[0]; startDateInput.value = startDate.toISOString().split('T')[0]; startDateInput.addEventListener('change', updateDashboard); endDateInput.addEventListener('change', updateDashboard); updateDashboard(); }
-function updateDashboard() { if (!localBillsCache.length) { document.getElementById('total-sales').textContent = '₹0.00'; document.getElementById('total-bills').textContent = '0'; document.getElementById('avg-bill-value').textContent = '₹0.00'; document.getElementById('top-products-body').innerHTML = '<tr><td colspan="3">No sales data.</td></tr>'; return; } const startDate = new Date(startDateInput.value); const endDate = new Date(endDateInput.value); endDate.setHours(23, 59, 59, 999); const filteredBills = localBillsCache.filter(bill => { const billDate = bill.date ? bill.date.toDate() : new Date(0); return billDate >= startDate && billDate <= endDate; }); const totalSales = filteredBills.reduce((sum, bill) => sum + bill.total, 0); const totalBills = filteredBills.length; const avgBillValue = totalBills > 0 ? totalSales / totalBills : 0; document.getElementById('total-sales').textContent = `₹${totalSales.toFixed(2)}`; document.getElementById('total-bills').textContent = totalBills; document.getElementById('avg-bill-value').textContent = `₹${avgBillValue.toFixed(2)}`; const productStats = new Map(); filteredBills.forEach(bill => { (bill.lines || []).forEach(line => { const existing = productStats.get(line.name) || { qty: 0, revenue: 0 }; productStats.set(line.name, { qty: existing.qty + line.qty, revenue: existing.revenue + (line.price * line.qty) }); }); }); const topProducts = Array.from(productStats.entries()).map(([name, stats]) => ({ name, ...stats })).sort((a, b) => b.revenue - a.revenue).slice(0, 10); const topProductsBody = document.getElementById('top-products-body'); if (topProducts.length > 0) { topProductsBody.innerHTML = topProducts.map(p => `<tr><td>${p.name}</td><td>${p.qty}</td><td>₹${p.revenue.toFixed(2)}</td></tr>`).join(''); } else { topProductsBody.innerHTML = '<tr><td colspan="3">No sales data for this period.</td></tr>'; } }
+function updateDashboard() {
+    if (!localBillsCache.length) { /* ... your existing empty state code is fine ... */ return; }
 
+    const startDate = new Date(startDateInput.value);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(endDateInput.value);
+    endDate.setHours(23, 59, 59, 999);
+
+    // 1. Filter bills by date range
+    const filteredBills = localBillsCache.filter(bill => {
+        const billDate = bill.date ? bill.date.toDate() : new Date(0);
+        return billDate >= startDate && billDate <= endDate;
+    });
+
+    // 2. Calculate KPIs (This part is unchanged)
+    const totalSales = filteredBills.reduce((sum, bill) => sum + bill.total, 0);
+    const totalBills = filteredBills.length;
+    const avgBillValue = totalBills > 0 ? totalSales / totalBills : 0;
+    document.getElementById('total-sales').textContent = `₹${totalSales.toFixed(2)}`;
+    document.getElementById('total-bills').textContent = totalBills;
+    document.getElementById('avg-bill-value').textContent = `₹${avgBillValue.toFixed(2)}`;
+
+    // --- NEW DATA PREPARATION FOR CHARTS ---
+
+    // 3a. Prepare data for Sales Trend chart
+    const salesByDay = new Map();
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        salesByDay.set(d.toLocaleDateString(), 0); // Initialize all days in range with 0 sales
+    }
+    filteredBills.forEach(bill => {
+        const day = bill.date.toDate().toLocaleDateString();
+        salesByDay.set(day, (salesByDay.get(day) || 0) + bill.total);
+    });
+    const trendLabels = [...salesByDay.keys()];
+    const trendData = [...salesByDay.values()];
+    renderSalesTrendChart(trendLabels, trendData);
+
+
+    // 3b. Prepare data for Top Products chart
+    const productStats = new Map();
+    filteredBills.forEach(bill => {
+        (bill.lines || []).forEach(line => {
+            const existing = productStats.get(line.name) || { qty: 0, revenue: 0 };
+            productStats.set(line.name, {
+                qty: existing.qty + line.qty,
+                revenue: existing.revenue + (line.price * line.qty)
+            });
+        });
+    });
+    const topProducts = Array.from(productStats.entries())
+        .map(([name, stats]) => ({ name, ...stats }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 7); // Show top 7 products
+
+    const productLabels = topProducts.map(p => p.name);
+    const productData = topProducts.map(p => p.revenue);
+    renderTopProductsChart(productLabels, productData);
+}/* ---------- CHART RENDERING FUNCTIONS (NEW) ---------- */
+function renderSalesTrendChart(labels, data) {
+    const ctx = document.getElementById('sales-trend-chart').getContext('2d');
+    
+    // Destroy existing chart to prevent duplicates
+    if (salesTrendChart) {
+        salesTrendChart.destroy();
+    }
+
+    salesTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Sales',
+                data: data,
+                backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                borderColor: 'rgba(37, 99, 235, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        // Format Y-axis ticks as currency
+                        callback: function(value, index, values) {
+                            return '₹' + value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += '₹' + context.parsed.y.toFixed(2);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderTopProductsChart(labels, data) {
+    const ctx = document.getElementById('top-products-chart').getContext('2d');
+    
+    if (topProductsChart) {
+        topProductsChart.destroy();
+    }
+
+    topProductsChart = new Chart(ctx, {
+        type: 'bar', // A bar chart is better for comparing items
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Revenue',
+                data: data,
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(99, 102, 241, 0.7)',
+                    'rgba(139, 92, 246, 0.7)',
+                    'rgba(217, 70, 239, 0.7)',
+                    'rgba(236, 72, 153, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(99, 102, 241, 1)',
+                    'rgba(139, 92, 246, 1)',
+                    'rgba(217, 70, 239, 1)',
+                    'rgba(236, 72, 153, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Makes it a horizontal bar chart
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { callback: value => '₹' + value }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false // Hide legend for a cleaner look
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => ` Revenue: ₹${context.parsed.x.toFixed(2)}`
+                    }
+                }
+            }
+        }
+    });
+}
 /* ---------- BILL PRINTING AND PDF ---------- */
 function generateBillText(billId) { const bill = localBillsCache.find(b => b.id === billId); if (!bill) return { text: '', customer: 'Unknown' }; let billText = `BILLING APP INVOICE\n===================================\nCustomer: ${bill.customer}\nPhone: ${bill.phone || 'N/A'}\nDate: ${bill.date ? bill.date.toDate().toLocaleString() : 'N/A'}\n===================================\n\nItems:\n--------------------------------------------------`; (bill.lines || []).forEach(line => { const name = (line.name || '').padEnd(20, ' '); const qty = `x ${line.qty}`.padEnd(5, ' '); const price = `@ ${line.price.toFixed(2)}`.padEnd(10, ' '); const subtotal = line.qty * line.price; billText += `\n${name}${qty}${price} = ${subtotal.toFixed(2)}`; }); billText += `\n--------------------------------------------------\n\nGRAND TOTAL: ${bill.total.toFixed(2)}`; return { text: billText, customer: bill.customer }; }
 function downloadPdf(billId) { const { jsPDF } = window.jspdf; const doc = new jsPDF(); const { text, customer } = generateBillText(billId); doc.setFont("Courier"); doc.setFontSize(12); doc.text(text, 10, 10); doc.save(`bill-${(customer || 'customer').replace(/\s+/g, '-')}-${billId.substring(0,5)}.pdf`); }
